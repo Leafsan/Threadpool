@@ -64,9 +64,15 @@ static int dequeue(task_t *t)
     return 0;
 }
 ```
+<img src="https://github.com/Leafsan/Threadpool/blob/master/Report/circle%2001.png">
+위는 원형 버퍼가 차있을 때를 그림으로 나타낸 것이다. (출처: https://reakwon.tistory.com/30)
+
+<img src="https://github.com/Leafsan/Threadpool/blob/master/Report/circle%2002.png">
+위는 원형 버퍼가 비어있을 때를 그림으로 나타낸 것이다. (출처:https://reakwon.tistory.com/30)
+
 enqueue와 dequeue 모두 버퍼에 접근(critical section)하기에 양쪽 모두 mutex를 지닌 상태에서만 접근할 수 있도록 했다. enqueue와 dequeue가 잘 되었는지 여부는 다음의 알고리즘을 따랐다.
-enqueue를 하게 되면, tail이 1 증가하면서 자신이 가리키는 위치에 구조체를 등록한다. 만약, tail이 가리키게 될 위치가 이미 head가 있는 위치라면 해당 버퍼는 가득 찬 것으로 간주하게 된다.
-dequeue의 경우에는 그와 반대로, head가 1 증가하면서 자신이 가리키는 위치에 있는 구조체를 구조체 포인터의 참조값에 대입해서 전달한다. 만약, head와 tail의 값이 같다면 해당 버퍼는 빈 것으로 간주하게 되어서 아무런 동작을 하지 않는다.
+enqueue를 하게 되면, tail이 1 증가하면서 자신이 가리키는 위치에 구조체를 등록한다. 만약, tail이 가리키게 될 위치가 이미 head가 있는 위치라면 위의 그림처럼 해당 버퍼는 가득 찬 것으로 간주하게 된다.
+dequeue의 경우에는 그와 반대로, head가 1 증가하면서 자신이 가리키는 위치에 있는 구조체를 구조체 포인터의 참조값에 대입해서 전달한다. 만약, head와 tail의 값이 같다면 위의 그림처럼 해당 버퍼는 빈 것으로 간주하게 되어서 아무런 동작을 하지 않는다.
 
 ```
 /*
@@ -504,11 +510,19 @@ void pool_shutdown(void)
 ```
 ---
 ## 컴파일
-<img src="">
+<img src="https://github.com/Leafsan/Threadpool/blob/master/Report/01.png">
+<img src="https://github.com/Leafsan/Threadpool/blob/master/Report/02.png">
 제공된 Makefile로 컴파일을 했다. Warning 내용이 많이 나왔지만, 컴파일 자체는 문제없이 되었다.
 
 ## 실행 결과
+<img src="https://github.com/Leafsan/Threadpool/blob/master/Report/03.png">
+화면 상에서 pool_init()와 pool_shutdown() 양쪽 모두 제대로 동작하는 것으로 나온다.
 
+<img src="https://github.com/Leafsan/Threadpool/blob/master/Report/04.png">
+문자열을 확인하면 11번부터 Queue가 꽉 찼음을 알 수 있다. 의도한 것과 알맞게 동작하고 있다.
+
+<img src="https://github.com/Leafsan/Threadpool/blob/master/Report/05.png">
+숫자를 출력하는 스레드 풀의 처리가 끝난 후, 푸 그림을 처리하는 것도 문제 없이 동작한다.
 
 ## 결론
-
+스레드 풀은 의도한대로 동작한다고 말할 수 있다. 처음에 세마포어 사용을 잘못해서 worker가 빈 주소값에 접근하는 것때문에 꽤 오래 고민했다. 다행히 원형 큐가 내부에 존재하는 자료의 수를 세는 변수를 가지는 경우도 있다는 것을 깨닫고 세마포어를 그와 비슷하게 설정하니 잘 동작하게 되었다.
